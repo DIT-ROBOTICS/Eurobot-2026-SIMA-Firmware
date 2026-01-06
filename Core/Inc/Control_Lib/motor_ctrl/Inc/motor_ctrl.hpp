@@ -38,7 +38,7 @@ private:
     bool _isCountingDown = false;
     bool _isRotating = false;
     uint16_t _last_cnt = 0;
-    int16_t cnt = 0;
+    int16_t _cnt = 0;
     uint16_t _pwmValue = 0;
     float _pidOutput = 0.0;
     float _currentSpeed = 0;
