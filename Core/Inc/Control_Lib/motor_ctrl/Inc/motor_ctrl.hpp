@@ -19,9 +19,9 @@ public:
         _enc(enc), _pwm(pwm), _channel(channel), _dirGPIO(dirGPIO), _dirPin(dirPin), _kp(kp), _ki(ki), _kd(kd){}
     ~MotorController() = default;
     
-    void init(int en_ctrl,int dir_ctrl);                        // Initialize the basic parameter
-    void setSpeed(float speed);        // Set motor speed in RPS
-    float getSpeed();                  // Return the current speed (Need to enable setSpeed())
+    void init(int en_ctrl,int dir_ctrl);        // Initialize the basic parameter
+    void setSpeed(float speed);                 // Set motor speed in RPS
+    float getSpeed();                           // Return the current speed (Need to enable setSpeed())
 
 
 private:
@@ -50,7 +50,6 @@ private:
     uint16_t _current_cnt = 0;
     int _en_ctrl = 0;
     int _dir_ctrl = 0;
-    //int _doupdatespeed = 0;
 
     float ComputePID();                // PID controller
     float updateSpeed();               // Update the motor current speed
