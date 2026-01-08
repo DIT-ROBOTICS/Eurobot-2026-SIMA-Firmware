@@ -19,8 +19,6 @@
 #include <uxr/client/transport.h>
 #include <rmw_microxrcedds_c/config.h>
 #include <rmw_microros/rmw_microros.h>
-#include <std_msgs/msg/int32.h>
-#include <std_msgs/msg/bool.h>
 
 #include "config.h"
 #include "timers.h"
@@ -61,6 +59,9 @@ void handle_state_agent_disconnected(void);
 void uros_create_entities(void);
 void uros_destroy_entities(void);
 
+void uros_timer_callback(rcl_timer_t * timer, int64_t last_call_time);
+void cmd_vel_callback(const void * msgin);
+void mission_type_callback(const void * msgin);
 
 
 #ifdef __cplusplus

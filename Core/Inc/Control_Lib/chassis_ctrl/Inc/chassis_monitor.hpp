@@ -7,10 +7,9 @@ extern "C" {
 #endif
 
 /* Includes */
-void chassis_monitor(void);
-void chassis_set_speed(float vx,float vy,float vz);
-void chassis_give_speed();
-extern float vel_x, vel_y, vel_z;
+void chassis_init();
+void chassis_set_speed(float V_Linear_goal, float W_goal);
+void chassis_get_speed(float* V_Linear_now, float* W_now);
 
 #ifdef __cplusplus
 }

@@ -18,7 +18,7 @@ public:
     MotorController(TIM_HandleTypeDef* enc, TIM_HandleTypeDef* pwm, uint32_t channel, GPIO_TypeDef* dirGPIO, uint16_t dirPin, double kp, double ki, double kd):
         _enc(enc), _pwm(pwm), _channel(channel), _dirGPIO(dirGPIO), _dirPin(dirPin), _kp(kp), _ki(ki), _kd(kd){}
     ~MotorController() = default;
-    
+
     void init(int en_ctrl,int dir_ctrl);        // Initialize the basic parameter
     void setSpeed(float speed);                 // Set motor speed in RPS
     float getSpeed();                           // Return the current speed (Need to enable setSpeed())

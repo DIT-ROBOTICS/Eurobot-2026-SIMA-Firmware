@@ -1,38 +1,31 @@
-// #include "chassis.hpp"
-// #include "chassis_monitor.hpp"
-// #include "motor_monitor.hpp"
+#include "chassis.hpp"
+#include "chassis_monitor.hpp"
+#include "motor_ctrl.hpp"
 
-// extern MotorController Motor_FR;
-// extern MotorController Motor_FL;
-// extern MotorController Motor_BR;
-// extern MotorController Motor_BL;
-// Chassis chassis(&Motor_FR, &Motor_FL , &Motor_BR, &Motor_BL);
-// float Vx_goal = 0.0;
-// float Vy_goal = 0.0;
-// float W_goal = 0.0;
-// float w_goal,x_goal,y_goal;
-// float x_error,y_error;
-// float vel_x, vel_y, vel_z;
+extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim4;
+extern TIM_HandleTypeDef htim5;
 
+// EN_A: TIM5 PWM_A: TIM2_CH1 DIR_A: PB_12
+// EN_B: TIM3 PWM_B: TIM2_CH3 DIR_B: PB_4
 
-// void chassis_monitor(void) {
-// //	if(bd.pos_y_mm< y_goal){
-//     chassis.setSpeed(Vx_goal,Vy_goal, W_goal);
-// //	}else{
-// //		chassis.setSpeed(0,0,0);
-// //	}
-// 	chassis.getLocation();
-// }
+MotorController Motor_R(&htim5, &htim2, TIM_CHANNEL_1, GPIOB, GPIO_PIN_12, 3, 80, 0);
+MotorController Motor_L(&htim3, &htim2, TIM_CHANNEL_3, GPIOB, GPIO_PIN_4 , 3, 80, 0);
 
-// void chassis_set_speed(float vx,float vy,float vz)//阿包版的chassis monitor
-// {
-// 	chassis.setSpeed(vx, vy, vz);
-// 	chassis.getLocation();
-// }
+Chassis chassis(&Motor_R, &Motor_L);
 
-// void chassis_give_speed()
-// {
-// 	vel_x = chassis._Vx_now;
-// 	vel_y = chassis._Vy_now;
-// 	vel_z = chassis._W_now;
-// }
+void chassis_init(){
+    Motor_R.init( -1,-1);
+    Motor_L.init( 1, 1);
+}
+
+void chassis_set_speed(float V_Linear_goal, float W_goal) {
+    chassis.setSpeed(V_Linear_goal, W_goal);
+}
+
+void chassis_get_speed(float* V_Linear_now, float* W_now) {
+    chassis.Differential_ForwardKinematics();
+    *V_Linear_now = chassis._V_Linear_now;
+    *W_now = chassis._W_now;
+}

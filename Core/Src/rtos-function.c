@@ -25,39 +25,36 @@
 #include "timers.h"
 #include "uros_init.h"
 #include "motor_monitor.hpp"
+#include "chassis.hpp"
 
 /**************** stm32 variable ****************/
 extern UART_HandleTypeDef huart1;
 extern TIM_HandleTypeDef htim11;
 extern TIM_HandleTypeDef htim5;
+extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim2;
 /**************** stm32 variable ****************/
 
+
 TimerHandle_t xTimer;
 int test = 0;
-int16_t count = 0;
+float V_Linear = 0.0;
+float W_angular = 0.0;
 
-void vTimerCallback( TimerHandle_t xTimer )
-{
-  // servo_refresh_angle();
-  // magnet_valve_refresh();
-  // air_pump_refresh();
-  
-}
+
+// int16_t count = 0;
+
+// void vTimerCallback( TimerHandle_t xTimer )
+// {
+// }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
- /* USER CODE BEGIN Callback 0 */
-
- /* USER CODE END Callback 0 */
- if (htim->Instance == TIM10) {
-  motor_monitor();
-  
-  count = __HAL_TIM_GetCounter(&htim5);
- }
- /* USER CODE BEGIN Callback 1 */
-
- /* USER CODE END Callback 1 */
+  if (htim->Instance == TIM11) {
+    HAL_IncTick();
+    // chassis_set_speed(V_Linear, W_angular);
+    // chassis_get_speed(&V_Linear, &W_angular);
+  }
 }
 
 
@@ -65,20 +62,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void StartDefaultTask(void *argument)
 {
   /*init*/
-  // mission_init(); // servo init
-  // uros_init();
-  motor_init();
+  HAL_TIM_Base_Start_IT(&htim11);   // Start the timer interrupt for chassis control
+  uros_init();
   
   // rtos timer for refreshing servo angle
-  xTimer = xTimerCreate("Timer", pdMS_TO_TICKS(100), pdTRUE, (void *)0, vTimerCallback);
-  xTimerStart(xTimer, 0);
-  HAL_TIM_Base_Start_IT(&htim11);
-
-
+  // xTimer = xTimerCreate("Timer", pdMS_TO_TICKS(100), pdTRUE, (void *)0, vTimerCallback);
+  // xTimerStart(xTimer, 0);
   for(;;)
   {
-    // uros_agent_status_check();
-    
+    uros_agent_status_check();
   }
 }
 /**************** freertos callback ****************/

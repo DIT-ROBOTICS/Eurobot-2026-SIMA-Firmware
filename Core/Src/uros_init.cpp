@@ -7,16 +7,24 @@
 
 
 #include "uros_init.h"
+#include <std_msgs/msg/int32.h>
+#include <std_msgs/msg/bool.h>
+#include <geometry_msgs/msg/twist.h>
+#include <nav_msgs/msg/odometry.h>
 
-rcl_publisher_t         mission_status_pub;
-std_msgs__msg__Int32    mission_status_msg;
-rcl_publisher_t         start_pub;
-std_msgs__msg__Bool     start_msg;
-rcl_subscription_t      mission_type_sub;
-std_msgs__msg__Int32    mission_type_msg;
-rcl_timer_t             status_pub_timer;
-rcl_timer_t             start_pub_timer;
+rcl_publisher_t           mission_status_pub;
+std_msgs__msg__Int32      mission_status_msg;
+rcl_publisher_t           odom_msg_pub;
+nav_msgs__msg__Odometry   odom_msg;
+rcl_subscription_t        cmd_vel_sub;
+geometry_msgs__msg__Twist cmd_vel_msg;
+rcl_subscription_t        mission_type_sub;
+std_msgs__msg__Int32      mission_type_msg;
+rcl_timer_t               uros_timer;
 
+extern float V_Linear;
+extern float W_angular;
+rcl_ret_t pub_success = RCL_RET_OK;
 
 rclc_support_t support;
 rcl_allocator_t allocator;
@@ -26,29 +34,9 @@ rclc_executor_t executor;
 
 agent_status_t status = AGENT_WAITING;
 
-int32_t mission_type = 0;
-int32_t mission_type_prev = 0;
-int32_t mission_status = 1;
-bool start_flag = 0;
-
 int ping_fail_count = 0;
 #define MAX_PING_FAIL_COUNT 5
 
-// task created flag
-int task_created = 0;
-int task_created_1 = 0;
-int task_created_2 = 0;
-int task_created_3 = 0;
-int task_created_7 = 0;
-int task_created_8 = 0;
-int task_created_9 = 0;
-
-// float heap_usage[100] = {0}; // Array to store heap usage percentages
-// int memory_usage_index = 0;
-int time_delay[100] = {0};
-int time_delay_index = 0;
-uint32_t current_time = 0; // Variable to store the current time
-uint64_t heap_remain = 0.0; // Variable to store heap usage percentage
 
 extern UART_HandleTypeDef USARTx;
 
@@ -97,25 +85,20 @@ void uros_agent_status_check(void) {
 }
 
 void handle_state_agent_waiting(void) {
-  status = (rmw_uros_ping_agent(100, 10) == RMW_RET_OK) ? AGENT_AVAILABLE : AGENT_WAITING;
+  status = (rmw_uros_ping_agent(10, 10) == RMW_RET_OK) ? AGENT_AVAILABLE : AGENT_WAITING;
 }
+
 void handle_state_agent_available(void) {
   uros_create_entities();
   status = AGENT_CONNECTED;
 }
+
 void handle_state_agent_connected(void) {
-  if(rmw_uros_ping_agent(20, 5) == RMW_RET_OK){
-    rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10));
-    ping_fail_count = 0; // Reset ping fail count
-  } else {
-    ping_fail_count++;
-    if(ping_fail_count >= MAX_PING_FAIL_COUNT){
-      status = AGENT_TRYING;
-    }
-  }
+  rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10));
 }
+
 void handle_state_agent_trying(void) {
-  if(rmw_uros_ping_agent(50, 10) == RMW_RET_OK){
+  if(rmw_uros_ping_agent(1, 10) == RMW_RET_OK){
     status = AGENT_CONNECTED;
     ping_fail_count = 0; // Reset ping fail count
   } else {
@@ -126,11 +109,11 @@ void handle_state_agent_trying(void) {
     }
   }
 }
+
 void handle_state_agent_disconnected(void) {
   uros_destroy_entities();
   status = AGENT_WAITING;
 }
-
 
 void uros_create_entities(void) {
   allocator = rcl_get_default_allocator();
@@ -145,7 +128,7 @@ void uros_create_entities(void) {
   
   rclc_node_init_default(&node, NODE_NAME, "", &support); // Initialize node
     
-  rclc_publisher_init_default( // Initialize publisher for mission status
+  rclc_publisher_init_default(
     &mission_status_pub,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
@@ -153,11 +136,46 @@ void uros_create_entities(void) {
     mission_status_msg.data = 0;
 
   rclc_publisher_init_default( // Initialize publisher for start message
-    &start_pub,
+    &odom_msg_pub,
     &node,
-    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Bool),
+    ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry),
     "/robot/startup/plug");
-  start_msg.data = 0;
+  odom_msg.header.frame_id.data = "odom";
+  odom_msg.child_frame_id.data = "base_link";
+  odom_msg.pose.pose.position.x = 0.0;
+  odom_msg.pose.pose.position.y = 0.0;
+  odom_msg.pose.pose.position.z = 0.0;
+  odom_msg.pose.pose.orientation.x = 0.0;
+  odom_msg.pose.pose.orientation.y = 0.0;
+  odom_msg.pose.pose.orientation.z = 0.0;
+  odom_msg.pose.pose.orientation.w = 1.0;
+  odom_msg.twist.twist.linear.x = 0.0;
+  odom_msg.twist.twist.linear.y = 0.0;
+  odom_msg.twist.twist.linear.z = 0.0;
+  odom_msg.twist.twist.angular.x = 0.0;
+  odom_msg.twist.twist.angular.y = 0.0;
+  odom_msg.twist.twist.angular.z = 0.0;
+  memset(odom_msg.pose.covariance, 0, sizeof(odom_msg.pose.covariance));
+  memset(odom_msg.twist.covariance, 0, sizeof(odom_msg.twist.covariance));
+  odom_msg.twist.covariance[0] = 0.02 * 0.02;   // vx variance
+  odom_msg.twist.covariance[7] = 0.02 * 0.02;   // vy variance
+  odom_msg.twist.covariance[14] = 1e-6;         // vz variance (small but non-zero for 2D)
+  odom_msg.twist.covariance[21] = 1e-6;         // roll rate variance (small but non-zero for 2D)
+  odom_msg.twist.covariance[28] = 1e-6;         // pitch rate variance (small but non-zero for 2D)
+  odom_msg.twist.covariance[35] = 0.02 * 0.02;  // yaw rate variance
+
+
+  rclc_subscription_init_default( // Initialize subscriber for mission type
+    &cmd_vel_sub,
+    &node,
+    ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+    "cmd_vel");
+  cmd_vel_msg.linear.x = 0.0;
+  cmd_vel_msg.linear.y = 0.0;
+  cmd_vel_msg.linear.z = 0.0;
+  cmd_vel_msg.angular.x = 0.0;
+  cmd_vel_msg.angular.y = 0.0;
+  cmd_vel_msg.angular.z = 0.0;
 
   rclc_subscription_init_default( // Initialize subscriber for mission type
     &mission_type_sub,
@@ -165,28 +183,28 @@ void uros_create_entities(void) {
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
     "mission_type");
   mission_type_msg.data = 0;
-  
-  // rclc_timer_init_default(&status_pub_timer, &support, RCL_MS_TO_NS(1000/FREQUENCY), status_pub_cb); // Initialize status message timer
-  // rclc_timer_init_default(&start_pub_timer, &support, RCL_MS_TO_NS(1000/FREQUENCY), start_pub_cb); // Initialize start message timer
-  
+
+  rclc_timer_init_default(&uros_timer, &support, RCL_MS_TO_NS(1000/FREQUENCY), uros_timer_callback); // Initialize uros timer
+
   rclc_executor_init(&executor, &support.context, 3, &allocator); // Create executor
 
-  // rclc_executor_add_subscription(&executor, &mission_type_sub, &mission_type_msg, &mission_type_sub_cb, ON_NEW_DATA); // Add subscriber to executor
-  rclc_executor_add_timer(&executor, &status_pub_timer); // Add timer to executor
-  rclc_executor_add_timer(&executor, &start_pub_timer); // Add start message timer to executor
+  rclc_executor_add_timer(&executor, &uros_timer);
+  rclc_executor_add_subscription(&executor, &cmd_vel_sub, &cmd_vel_msg, &cmd_vel_callback, ON_NEW_DATA);
+  rclc_executor_add_subscription(&executor, &mission_type_sub, &mission_type_msg, &mission_type_callback, ON_NEW_DATA);
 }
+
 void uros_destroy_entities(void) {
   rmw_context_t* rmw_context = rcl_context_get_rmw_context(&support.context);
   (void) rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
   // Destroy timer
-  rcl_timer_fini(&status_pub_timer);
-  rcl_timer_fini(&start_pub_timer);
+  rcl_timer_fini(&uros_timer);
 
   // Destroy publisher
   rcl_publisher_fini(&mission_status_pub, &node);
-  rcl_publisher_fini(&start_pub, &node);
+  rcl_publisher_fini(&odom_msg_pub, &node);
 
   // Destroy subscriber
+  rcl_subscription_fini(&cmd_vel_sub, &node);
   rcl_subscription_fini(&mission_type_sub, &node);
 
   // Destroy executor
@@ -198,4 +216,24 @@ void uros_destroy_entities(void) {
 }
 
 
+void uros_timer_callback(rcl_timer_t * timer, int64_t last_call_time) {
+  // This function can be used for periodic tasks if needed
+  odom_msg.twist.twist.linear.x = V_Linear;
+  odom_msg.twist.twist.angular.z = W_angular;
+  pub_success = rcl_publish(&odom_msg_pub, &odom_msg, NULL);
+  if(pub_success != RCL_RET_OK){
+    status = AGENT_TRYING;
+  }
+  // mission status need to be added
+}
 
+void cmd_vel_callback(const void * msgin) {
+  const geometry_msgs__msg__Twist * msg = (const geometry_msgs__msg__Twist *)msgin;
+  V_Linear = msg->linear.x;
+  W_angular = msg->angular.z;
+}
+
+void mission_type_callback(const void * msgin) {
+  const std_msgs__msg__Int32 * msg = (const std_msgs__msg__Int32 *)msgin;
+  mission_type_msg.data = msg->data;
+}

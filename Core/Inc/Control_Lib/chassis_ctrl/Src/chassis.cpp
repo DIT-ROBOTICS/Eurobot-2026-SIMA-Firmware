@@ -4,20 +4,20 @@ float Vx_global,Vy_global,dt;
 void Chassis::setSpeed(float V_Linear_goal, float W_goal){
     _V_Linear_goal = V_Linear_goal;
     _W_goal  = W_goal;
-    Differencial_InverseKinematics();
-    _motorR->setSpeed(_V_R_goal / _wheel_perimeter);   // RPS
-    _motorL->setSpeed(_V_L_goal / _wheel_perimeter);   // RPS
+    Differential_InverseKinematics();
+    _motorR->setSpeed(_V_R_goal / (PI * WHEEL_DIA));   // RPS
+    _motorL->setSpeed(_V_L_goal / (PI * WHEEL_DIA));   // RPS
 }
 
-void Chassis::Differencial_ForwardKinematics(){
+void Chassis::Differential_ForwardKinematics(){
     _V_R_now = _motorR->getSpeed() * WHEEL_DIA * PI;   // m/s
     _V_L_now = _motorL->getSpeed() * WHEEL_DIA * PI;   // m/s
 
-    _Vx_now = (_V_R_now + _V_L_now) / 2.0f;
+    _V_Linear_now = (_V_R_now + _V_L_now) / 2.0f;
     _W_now = (_V_R_now - _V_L_now) / CHASSIS_WIDTH;
 }
 
-void Chassis::Differencial_InverseKinematics(){
+void Chassis::Differential_InverseKinematics(){
     _V_R_goal = _V_Linear_goal + _W_goal*(CHASSIS_WIDTH/2);
     _V_L_goal = _V_Linear_goal - _W_goal*(CHASSIS_WIDTH/2);
 }
