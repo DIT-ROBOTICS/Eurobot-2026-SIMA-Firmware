@@ -52,6 +52,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim->Instance == TIM11) {
     HAL_IncTick();
+    motor_monitor();
     // chassis_set_speed(V_Linear, W_angular);
     // chassis_get_speed(&V_Linear, &W_angular);
   }
@@ -64,6 +65,7 @@ void StartDefaultTask(void *argument)
   /*init*/
   HAL_TIM_Base_Start_IT(&htim11);   // Start the timer interrupt for chassis control
   uros_init();
+  motor_init();
   
   // rtos timer for refreshing servo angle
   // xTimer = xTimerCreate("Timer", pdMS_TO_TICKS(100), pdTRUE, (void *)0, vTimerCallback);
