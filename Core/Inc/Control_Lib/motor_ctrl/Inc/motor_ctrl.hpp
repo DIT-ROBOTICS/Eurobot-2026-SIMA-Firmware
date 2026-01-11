@@ -13,6 +13,9 @@ extern "C" {
 #include "math.h"
 #include "motor_config.h"
 
+#ifdef __cplusplus
+}
+
 class MotorController{
 public:
     MotorController(TIM_HandleTypeDef* enc, TIM_HandleTypeDef* pwm, uint32_t channel, GPIO_TypeDef* dirGPIO, uint16_t dirPin, double kp, double ki, double kd):
@@ -55,8 +58,7 @@ private:
     float updateSpeed();               // Update the motor current speed
 };
 
-#ifdef __cplusplus
-}
-#endif
+
+#endif // __cplusplus
 
 #endif /* MOTOR_CTRL_H */

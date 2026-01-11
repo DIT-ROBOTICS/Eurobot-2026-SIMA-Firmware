@@ -22,8 +22,10 @@ rcl_subscription_t        mission_type_sub;
 std_msgs__msg__Int32      mission_type_msg;
 rcl_timer_t               uros_timer;
 
-extern float V_Linear;
-extern float W_angular;
+extern float V_Linear_goal;
+extern float W_angular_goal;
+extern float V_Linear_now;
+extern float W_angular_now;
 rcl_ret_t pub_success = RCL_RET_OK;
 
 rclc_support_t support;
@@ -139,7 +141,7 @@ void uros_create_entities(void) {
     &odom_msg_pub,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry),
-    "/robot/startup/plug");
+    "wheel/odom");
   odom_msg.header.frame_id.data = "odom";
   odom_msg.child_frame_id.data = "base_link";
   odom_msg.pose.pose.position.x = 0.0;
@@ -218,8 +220,8 @@ void uros_destroy_entities(void) {
 
 void uros_timer_callback(rcl_timer_t * timer, int64_t last_call_time) {
   // This function can be used for periodic tasks if needed
-  odom_msg.twist.twist.linear.x = V_Linear;
-  odom_msg.twist.twist.angular.z = W_angular;
+  odom_msg.twist.twist.linear.x = V_Linear_now;
+  odom_msg.twist.twist.angular.z = W_angular_now;
   pub_success = rcl_publish(&odom_msg_pub, &odom_msg, NULL);
   if(pub_success != RCL_RET_OK){
     status = AGENT_TRYING;
@@ -229,8 +231,8 @@ void uros_timer_callback(rcl_timer_t * timer, int64_t last_call_time) {
 
 void cmd_vel_callback(const void * msgin) {
   const geometry_msgs__msg__Twist * msg = (const geometry_msgs__msg__Twist *)msgin;
-  V_Linear = msg->linear.x;
-  W_angular = msg->angular.z;
+  V_Linear_goal = msg->linear.x;
+  W_angular_goal = msg->angular.z;
 }
 
 void mission_type_callback(const void * msgin) {

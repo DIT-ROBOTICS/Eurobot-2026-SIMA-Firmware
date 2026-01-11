@@ -53,7 +53,7 @@ DMA_HandleTypeDef hdma_usart1_tx;
 
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
-uint32_t defaultTaskBuffer[ 3000 ];
+uint32_t defaultTaskBuffer[ 4000 ];
 osStaticThreadDef_t defaultTaskControlBlock;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
@@ -425,7 +425,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 2000000;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -520,18 +520,18 @@ __weak void StartDefaultTask(void *argument)
   * @param  htim : TIM handle
   * @retval None
   */
-//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-//{
-//  /* USER CODE BEGIN Callback 0 */
-////////
-//  /* USER CODE END Callback 0 */
-//  if (htim->Instance == TIM10) {
-//    HAL_IncTick();
-//  }
-//  /* USER CODE BEGIN Callback 1 */
-////////
-//  /* USER CODE END Callback 1 */
-//}
+// void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+// {
+//   /* USER CODE BEGIN Callback 0 */
+// // // // // // // // // // //////////
+//   /* USER CODE END Callback 0 */
+//   if (htim->Instance == TIM10) {
+//     HAL_IncTick();
+//   }
+//   /* USER CODE BEGIN Callback 1 */
+// // // // // // // // // // //////////
+//   /* USER CODE END Callback 1 */
+// }
 
 /**
   * @brief  This function is executed in case of error occurrence.

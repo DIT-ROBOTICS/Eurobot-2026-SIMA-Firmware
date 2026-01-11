@@ -14,11 +14,14 @@ extern "C" {
 /*******All the parameter about chassis is in "chassis_config.h"*******/
 /**********************************************************************/
 extern float Vx_global,Vy_global,dt;
+#ifdef __cplusplus
+}
 
-class Chassis {
+class Chassis{
     public:
         Chassis(MotorController* motorR, MotorController* motorL):
                 _motorR(motorR), _motorL(motorL){}
+        Chassis(){};
         ~Chassis() = default;
 
         void setSpeed(float V_Linear_goal, float W_goal);       // Set the speed of chassis
@@ -40,8 +43,7 @@ class Chassis {
 };
 
 
-#ifdef __cplusplus
-}
-#endif
+
+#endif // __cplusplus
 
 #endif // CHASSIS_HPP

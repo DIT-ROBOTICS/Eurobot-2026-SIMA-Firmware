@@ -26,6 +26,7 @@
 #include "uros_init.h"
 #include "motor_monitor.hpp"
 #include "chassis.hpp"
+#include "chassis_monitor.hpp"
 
 /**************** stm32 variable ****************/
 extern UART_HandleTypeDef huart1;
@@ -38,9 +39,10 @@ extern TIM_HandleTypeDef htim2;
 
 TimerHandle_t xTimer;
 int test = 0;
-float V_Linear = 0.0;
-float W_angular = 0.0;
-
+float V_Linear_goal = 0.0;
+float W_angular_goal = 0.0;
+float V_Linear_now = 0.0;
+float W_angular_now = 0.0;
 
 // int16_t count = 0;
 
@@ -52,9 +54,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim->Instance == TIM11) {
     HAL_IncTick();
-    motor_monitor();
-    // chassis_set_speed(V_Linear, W_angular);
-    // chassis_get_speed(&V_Linear, &W_angular);
+    chassis_set_speed(V_Linear_goal, W_angular_goal);
+    chassis_get_speed(&V_Linear_now, &W_angular_now);
   }
 }
 
@@ -65,7 +66,7 @@ void StartDefaultTask(void *argument)
   /*init*/
   HAL_TIM_Base_Start_IT(&htim11);   // Start the timer interrupt for chassis control
   uros_init();
-  motor_init();
+  chassis_init();
   
   // rtos timer for refreshing servo angle
   // xTimer = xTimerCreate("Timer", pdMS_TO_TICKS(100), pdTRUE, (void *)0, vTimerCallback);
@@ -73,6 +74,7 @@ void StartDefaultTask(void *argument)
   for(;;)
   {
     uros_agent_status_check();
+    // osDelay(5);
   }
 }
 /**************** freertos callback ****************/

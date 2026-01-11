@@ -22,6 +22,10 @@ void Chassis::Differential_InverseKinematics(){
     _V_L_goal = _V_Linear_goal - _W_goal*(CHASSIS_WIDTH/2);
 }
 
+
+
+
+
 // void Chassis::getLocation(){
 // 	Mecan_ForwardKinematics();
 // 	dt = DT;
