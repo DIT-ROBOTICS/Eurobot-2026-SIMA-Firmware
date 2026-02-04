@@ -11,21 +11,26 @@
 #include <std_msgs/msg/bool.h>
 #include <geometry_msgs/msg/twist.h>
 #include <nav_msgs/msg/odometry.h>
+#include <std_msgs/msg/float32_multi_array.h>
+#include <string.h>
 
-rcl_publisher_t           mission_status_pub;
-std_msgs__msg__Int32      mission_status_msg;
-rcl_publisher_t           odom_msg_pub;
-nav_msgs__msg__Odometry   odom_msg;
-rcl_subscription_t        cmd_vel_sub;
-geometry_msgs__msg__Twist cmd_vel_msg;
-rcl_subscription_t        mission_type_sub;
-std_msgs__msg__Int32      mission_type_msg;
-rcl_timer_t               uros_timer;
+rcl_publisher_t                  mission_status_pub;
+std_msgs__msg__Int32             mission_status_msg;
+rcl_publisher_t                  odom_msg_pub;
+nav_msgs__msg__Odometry          odom_msg;
+rcl_publisher_t                  vl53l0x_pub;
+std_msgs__msg__Float32MultiArray vl53l0x_msg;
+rcl_subscription_t               cmd_vel_sub;
+geometry_msgs__msg__Twist        cmd_vel_msg;
+rcl_subscription_t               mission_type_sub;
+std_msgs__msg__Int32             mission_type_msg;
+rcl_timer_t                      uros_timer;
 
 extern float V_Linear_goal;
 extern float W_angular_goal;
 extern float V_Linear_now;
 extern float W_angular_now;
+extern float vl53l0x_ranges[3];
 rcl_ret_t pub_success = RCL_RET_OK;
 
 rclc_support_t support;
@@ -166,6 +171,14 @@ void uros_create_entities(void) {
   odom_msg.twist.covariance[28] = 1e-6;         // pitch rate variance (small but non-zero for 2D)
   odom_msg.twist.covariance[35] = 0.02 * 0.02;  // yaw rate variance
 
+  rclc_publisher_init_default(
+    &vl53l0x_pub,
+    &node,
+    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32MultiArray),
+    "sensors/raw_ranges");
+    vl53l0x_msg.data.data = vl53l0x_ranges;
+
+
 
   rclc_subscription_init_default( // Initialize subscriber for mission type
     &cmd_vel_sub,
@@ -223,6 +236,13 @@ void uros_timer_callback(rcl_timer_t * timer, int64_t last_call_time) {
   odom_msg.twist.twist.linear.x = V_Linear_now;
   odom_msg.twist.twist.angular.z = W_angular_now;
   pub_success = rcl_publish(&odom_msg_pub, &odom_msg, NULL);
+  if(pub_success != RCL_RET_OK){
+    status = AGENT_TRYING;
+  }
+  for(int i = 0; i < 3; i++){
+    vl53l0x_msg.data.data[i] = vl53l0x_ranges[i];
+  }
+  pub_success = rcl_publish(&vl53l0x_pub, &vl53l0x_msg, NULL);
   if(pub_success != RCL_RET_OK){
     status = AGENT_TRYING;
   }

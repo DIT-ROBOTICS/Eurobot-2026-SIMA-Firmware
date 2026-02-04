@@ -27,6 +27,8 @@
 #include "motor_monitor.hpp"
 #include "chassis.hpp"
 #include "chassis_monitor.hpp"
+#include "vl53l0x_api.h"
+#include "vl53l0x_ctrl.hpp"
 
 /**************** stm32 variable ****************/
 extern UART_HandleTypeDef huart1;
@@ -34,11 +36,17 @@ extern TIM_HandleTypeDef htim11;
 extern TIM_HandleTypeDef htim5;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim2;
+extern I2C_HandleTypeDef hi2c1;
+extern I2C_HandleTypeDef hi2c2;
+extern I2C_HandleTypeDef hi2c3;
 /**************** stm32 variable ****************/
+VL53L0X_Dev_t  vl53l0x_c; // center module
+VL53L0X_Dev_t  vl53l0x_l; // left module
+VL53L0X_Dev_t  vl53l0x_r; // right module
 
 
-TimerHandle_t xTimer;
-int test = 0;
+TimerHandle_t xRangingTimer;
+float vl53l0x_ranges[3] = {0.0, 0.0, 0.0};
 float V_Linear_goal = 0.0;
 float W_angular_goal = 0.0;
 float V_Linear_now = 0.0;
@@ -46,9 +54,12 @@ float W_angular_now = 0.0;
 
 // int16_t count = 0;
 
-// void vTimerCallback( TimerHandle_t xTimer )
-// {
-// }
+void RangingTimerCallback( TimerHandle_t xTimer )
+{
+  vl53l0x_ranges[0] = vl53l0x_read_distance(&vl53l0x_l);
+  vl53l0x_ranges[1] = vl53l0x_read_distance(&vl53l0x_c);
+  vl53l0x_ranges[2] = vl53l0x_read_distance(&vl53l0x_r);
+}
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -67,14 +78,16 @@ void StartDefaultTask(void *argument)
   HAL_TIM_Base_Start_IT(&htim11);   // Start the timer interrupt for chassis control
   uros_init();
   chassis_init();
-  
+  vl53l0x_init_single(&hi2c1, &vl53l0x_c, GPIOB, GPIO_PIN_13);
+  vl53l0x_init_single(&hi2c2, &vl53l0x_l, GPIOC, GPIO_PIN_4);
+  vl53l0x_init_single(&hi2c3, &vl53l0x_r, GPIOC, GPIO_PIN_5);
   // rtos timer for refreshing servo angle
-  // xTimer = xTimerCreate("Timer", pdMS_TO_TICKS(100), pdTRUE, (void *)0, vTimerCallback);
-  // xTimerStart(xTimer, 0);
+  xRangingTimer = xTimerCreate("RangingTimer", pdMS_TO_TICKS(50), pdTRUE, (void *)0, RangingTimerCallback);
+  xTimerStart(xRangingTimer, 0);
   for(;;)
   {
     uros_agent_status_check();
-    // osDelay(5);
+//     osDelay(5);
   }
 }
 /**************** freertos callback ****************/

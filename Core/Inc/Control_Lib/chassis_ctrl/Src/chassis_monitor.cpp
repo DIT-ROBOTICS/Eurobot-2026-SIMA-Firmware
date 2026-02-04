@@ -8,16 +8,16 @@ extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim5;
 
 // EN_A: TIM5 PWM_A: TIM2_CH1 DIR_A: PB_12
-// EN_B: TIM3 PWM_B: TIM2_CH3 DIR_B: PB_4
+// EN_B: TIM3 PWM_B: TIM4_CH3 DIR_B: PB_4
 
-MotorController Motor_R(&htim5, &htim2, TIM_CHANNEL_1, GPIOB, GPIO_PIN_12, 3, 80, 0);
-MotorController Motor_L(&htim3, &htim2, TIM_CHANNEL_3, GPIOB, GPIO_PIN_4 , 3, 80, 0);
+MotorController Motor_R(&htim5, &htim2, TIM_CHANNEL_1, GPIOB, GPIO_PIN_12, 4, 80, 0);
+MotorController Motor_L(&htim3, &htim4, TIM_CHANNEL_1, GPIOB, GPIO_PIN_4 , 4, 80, 0);
 
 Chassis chassis(&Motor_R, &Motor_L);
 
 void chassis_init(){
-    Motor_R.init( -1,-1);
-    Motor_L.init( 1, 1);
+    Motor_R.init( -1, 1);
+    Motor_L.init( 1, -1);
 }
 
 void chassis_set_speed(float V_Linear_goal, float W_goal) {
