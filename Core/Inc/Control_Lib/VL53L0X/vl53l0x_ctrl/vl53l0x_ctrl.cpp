@@ -32,10 +32,9 @@ void vl53l0x_init_single(I2C_HandleTypeDef* hi2c, VL53L0X_DEV Dev, GPIO_TypeDef*
     VL53L0X_SetVcselPulsePeriod(Dev, VL53L0X_VCSEL_PERIOD_FINAL_RANGE, 14);
 }
 
-float vl53l0x_read_distance(VL53L0X_DEV Dev)
+float vl53l0x_read_distance(VL53L0X_DEV Dev, VL53L0X_RangingMeasurementData_t RangingData)
 {
-    VL53L0X_RangingMeasurementData_t RangingData;
     VL53L0X_PerformSingleRangingMeasurement(Dev, &RangingData);
-    return static_cast<float>(RangingData.RangeMilliMeter);
+    return static_cast<float>(RangingData.RangeMilliMeter)/1000.0;
 }
 

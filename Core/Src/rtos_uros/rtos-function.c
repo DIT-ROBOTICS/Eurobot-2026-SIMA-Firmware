@@ -52,13 +52,17 @@ float W_angular_goal = 0.0;
 float V_Linear_now = 0.0;
 float W_angular_now = 0.0;
 
+VL53L0X_RangingMeasurementData_t RangingData;
+VL53L0X_RangingMeasurementData_t RangingData2;
+VL53L0X_RangingMeasurementData_t RangingData3;
+
 // int16_t count = 0;
 
 void RangingTimerCallback( TimerHandle_t xTimer )
 {
-  vl53l0x_ranges[0] = vl53l0x_read_distance(&vl53l0x_l);
-  vl53l0x_ranges[1] = vl53l0x_read_distance(&vl53l0x_c);
-  vl53l0x_ranges[2] = vl53l0x_read_distance(&vl53l0x_r);
+  vl53l0x_ranges[0] = vl53l0x_read_distance(&vl53l0x_l, RangingData);
+  vl53l0x_ranges[1] = vl53l0x_read_distance(&vl53l0x_c, RangingData2);
+  vl53l0x_ranges[2] = vl53l0x_read_distance(&vl53l0x_r, RangingData3);
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)

@@ -176,7 +176,9 @@ void uros_create_entities(void) {
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32MultiArray),
     "sensors/raw_ranges");
-    vl53l0x_msg.data.data = vl53l0x_ranges;
+  vl53l0x_msg.data.data = (float *)malloc(3 * sizeof(float));
+  vl53l0x_msg.data.size = 3;
+  vl53l0x_msg.data.capacity = 3;
 
 
 
