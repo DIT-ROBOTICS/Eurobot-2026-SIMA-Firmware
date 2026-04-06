@@ -584,7 +584,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 2000000;
+  huart1.Init.BaudRate = 1000000;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -694,14 +694,14 @@ __weak void StartDefaultTask(void *argument)
 //void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //{
 //  /* USER CODE BEGIN Callback 0 */
-//////////////// // // // // // // // // // //////////
+////////////////// // // // // // // // // // //////////
 //  /* USER CODE END Callback 0 */
 //  if (htim->Instance == TIM10)
 //  {
 //    HAL_IncTick();
 //  }
 //  /* USER CODE BEGIN Callback 1 */
-//////////////// // // // // // // // // // //////////
+////////////////// // // // // // // // // // //////////
 //  /* USER CODE END Callback 1 */
 //}
 

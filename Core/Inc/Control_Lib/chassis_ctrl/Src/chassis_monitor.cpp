@@ -10,8 +10,8 @@ extern TIM_HandleTypeDef htim5;
 // EN_A: TIM5 PWM_A: TIM2_CH1 DIR_A: PB_12
 // EN_B: TIM3 PWM_B: TIM4_CH3 DIR_B: PB_4
 
-MotorController Motor_R(&htim5, &htim2, TIM_CHANNEL_1, GPIOB, GPIO_PIN_12, 4, 80, 0);
-MotorController Motor_L(&htim3, &htim4, TIM_CHANNEL_1, GPIOB, GPIO_PIN_4 , 4, 80, 0);
+MotorController Motor_R(&htim5, &htim2, TIM_CHANNEL_1, GPIOB, GPIO_PIN_12, 1.5, 30, 0);
+MotorController Motor_L(&htim3, &htim4, TIM_CHANNEL_1, GPIOB, GPIO_PIN_4 , 1.5, 30, 0);
 
 Chassis chassis(&Motor_R, &Motor_L);
 

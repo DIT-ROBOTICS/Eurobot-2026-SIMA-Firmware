@@ -60,9 +60,9 @@ VL53L0X_RangingMeasurementData_t RangingData3;
 
 void RangingTimerCallback( TimerHandle_t xTimer )
 {
-  vl53l0x_ranges[0] = vl53l0x_read_distance(&vl53l0x_l, RangingData);
-  vl53l0x_ranges[1] = vl53l0x_read_distance(&vl53l0x_c, RangingData2);
-  vl53l0x_ranges[2] = vl53l0x_read_distance(&vl53l0x_r, RangingData3);
+  vl53l0x_ranges[0] = vl53l0x_read_distance(&vl53l0x_r, &RangingData);
+  vl53l0x_ranges[1] = vl53l0x_read_distance(&vl53l0x_c, &RangingData2);
+  vl53l0x_ranges[2] = vl53l0x_read_distance(&vl53l0x_l, &RangingData3);
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -82,9 +82,9 @@ void StartDefaultTask(void *argument)
   HAL_TIM_Base_Start_IT(&htim11);   // Start the timer interrupt for chassis control
   uros_init();
   chassis_init();
-  vl53l0x_init_single(&hi2c1, &vl53l0x_c, GPIOB, GPIO_PIN_13);
+  vl53l0x_init_single(&hi2c1, &vl53l0x_r, GPIOB, GPIO_PIN_13);
   vl53l0x_init_single(&hi2c2, &vl53l0x_l, GPIOC, GPIO_PIN_4);
-  vl53l0x_init_single(&hi2c3, &vl53l0x_r, GPIOC, GPIO_PIN_5);
+  vl53l0x_init_single(&hi2c3, &vl53l0x_c, GPIOC, GPIO_PIN_5);
   // rtos timer for refreshing servo angle
   xRangingTimer = xTimerCreate("RangingTimer", pdMS_TO_TICKS(50), pdTRUE, (void *)0, RangingTimerCallback);
   xTimerStart(xRangingTimer, 0);

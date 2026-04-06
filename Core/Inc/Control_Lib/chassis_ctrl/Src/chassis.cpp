@@ -14,12 +14,12 @@ void Chassis::Differential_ForwardKinematics(){
     _V_L_now = _motorL->getSpeed() * WHEEL_DIA * PI;   // m/s
 
     _V_Linear_now = (_V_R_now + _V_L_now) / 2.0f;
-    _W_now = (_V_R_now - _V_L_now) / CHASSIS_WIDTH;
+    _W_now = -(_V_R_now - _V_L_now) / CHASSIS_WIDTH;
 }
 
 void Chassis::Differential_InverseKinematics(){
-    _V_R_goal = _V_Linear_goal + _W_goal*(CHASSIS_WIDTH/2);
-    _V_L_goal = _V_Linear_goal - _W_goal*(CHASSIS_WIDTH/2);
+    _V_R_goal = _V_Linear_goal + -_W_goal*(CHASSIS_WIDTH/2);
+    _V_L_goal = _V_Linear_goal - -_W_goal*(CHASSIS_WIDTH/2);
 }
 
 

@@ -11,7 +11,7 @@ extern "C" {
 
 // Function declarations
 void vl53l0x_init_single(I2C_HandleTypeDef* hi2c, VL53L0X_DEV Dev, GPIO_TypeDef* Xshut, uint16_t XshutPin);
-float vl53l0x_read_distance(VL53L0X_DEV Dev, VL53L0X_RangingMeasurementData_t RangingData);
+float vl53l0x_read_distance(VL53L0X_DEV Dev, VL53L0X_RangingMeasurementData_t* RangingData);
 
 #ifdef __cplusplus
 }

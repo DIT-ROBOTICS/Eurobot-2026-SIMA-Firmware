@@ -198,7 +198,7 @@ void uros_create_entities(void) {
     &mission_type_sub,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
-    "mission_type");
+    "robot/startup/sima_game_over");
   mission_type_msg.data = 0;
 
   rclc_timer_init_default(&uros_timer, &support, RCL_MS_TO_NS(1000/FREQUENCY), uros_timer_callback); // Initialize uros timer
@@ -248,6 +248,10 @@ void uros_timer_callback(rcl_timer_t * timer, int64_t last_call_time) {
   if(pub_success != RCL_RET_OK){
     status = AGENT_TRYING;
   }
+  
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, mission_type_msg.data == 1 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+
+  // status = (rmw_uros_ping_agent(10, 10) == RMW_RET_OK) ? AGENT_CONNECTED : AGENT_DISCONNECTED;
   // mission status need to be added
 }
 

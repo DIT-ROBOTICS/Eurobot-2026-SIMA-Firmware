@@ -7,7 +7,7 @@
 
 #define I2C_TIME_OUT_BASE   10
 #define I2C_TIME_OUT_BYTE   1
-#define VL53L0X_OsDelay(...) osDelay(0)
+#define VL53L0X_OsDelay(...) osDelay(2)
 
 
 #ifndef HAL_I2C_MODULE_ENABLED
